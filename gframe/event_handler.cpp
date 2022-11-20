@@ -305,6 +305,7 @@ bool ClientField::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_OPTION_OK: {
 				soundManager.PlaySoundEffect(SOUND_BUTTON);
+				ShowCancelOrFinishButton(0);
 				if (mainGame->dInfo.curMsg == MSG_SELECT_OPTION) {
 					DuelClient::SetResponseI(selected_option);
 				} else {
