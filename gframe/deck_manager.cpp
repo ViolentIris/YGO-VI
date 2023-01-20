@@ -80,6 +80,15 @@ const wchar_t* DeckManager::GetLFListName(int lfhash) {
 	}
 	return (wchar_t*)dataManager.unknown_string;
 }
+static int checkAvail(int ot, int avail) {
+	if((ot & avail) == avail)
+		return 0;
+	if((ot & AVAIL_OCG) && !(avail == AVAIL_OCG))
+		return DECKERROR_OCGONLY;
+	if((ot & AVAIL_TCG) && !(avail == AVAIL_TCG))
+		return DECKERROR_TCGONLY;
+	return DECKERROR_NOTAVAIL;
+}
 int DeckManager::CheckDeck(Deck& deck, int lfhash, bool allow_ocg, bool allow_tcg) {
 	std::unordered_map<int, int> ccount;
 	std::unordered_map<int, int>* list = 0;
