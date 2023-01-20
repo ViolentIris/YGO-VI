@@ -578,7 +578,7 @@ void Game::DrawMisc() {
 	driver->draw2DImage(imageManager.tLPFrame, Resize(330, 10, 629, 30), recti(0, 0, 200, 20), 0, 0, true);
 	driver->draw2DImage(imageManager.tLPFrame, Resize(691, 10, 990, 30), recti(0, 0, 200, 20), 0, 0, true);
 	if(dInfo.start_lp) {
-		auto maxLP = dInfo.isTag ? dInfo.start_lp / 2 : dInfo.start_lp;
+		auto maxLP = dInfo.isTag ? ((dInfo.start_lp / 2) : dInfo.start_lp）;
 		if(dInfo.lp[0] >= maxLP) {
 			auto layerCount = dInfo.lp[0] / maxLP;
 			auto partialLP = dInfo.lp[0] % maxLP;
