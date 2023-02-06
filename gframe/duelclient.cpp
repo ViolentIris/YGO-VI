@@ -863,12 +863,11 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 		STOC_Chat* pkt = (STOC_Chat*)pdata;
 		int player = pkt->player;
 		if(player < 4) {
+			if(mainGame->chkIgnore1->isChecked())
+				break;
 			if(!mainGame->dInfo.isTag) {
-				if(mainGame->dInfo.isStarted) {
+				if(mainGame->dInfo.isStarted)
 					player = mainGame->LocalPlayer(player);
-					if(player == 1 && mainGame->chkIgnore1->isChecked())
-						break;
-				}
 			} else {
 				if(mainGame->dInfo.isStarted && !mainGame->dInfo.isFirst)
 					player ^= 2;
@@ -882,8 +881,6 @@ void DuelClient::HandleSTOCPacketLan(char* data, unsigned int len) {
 					player = 3;
 				else
 					player = 10;
-				if(mainGame->dInfo.isStarted && (player == 1 || player == 3) && mainGame->chkIgnore1->isChecked())
-					break;
 			}
 		} else {
 			if(player == 8) { //system custom message.
@@ -1898,10 +1895,10 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 				respbuf[0] = mainGame->LocalPlayer(0);
 				respbuf[1] = LOCATION_MZONE;
 				filter = mainGame->dField.selectable_field & 0x7f;
-			} else if (mainGame->dField.selectable_field & 0x1f00) {
+			} else if (mainGame->dField.selectable_field & 0x3f00) {
 				respbuf[0] = mainGame->LocalPlayer(0);
 				respbuf[1] = LOCATION_SZONE;
-				filter = (mainGame->dField.selectable_field >> 8) & 0x1f;
+				filter = (mainGame->dField.selectable_field >> 8) & 0x3f;
 			} else if (mainGame->dField.selectable_field & 0xc000) {
 				respbuf[0] = mainGame->LocalPlayer(0);
 				respbuf[1] = LOCATION_SZONE;
@@ -1911,10 +1908,10 @@ int DuelClient::ClientAnalyze(char * msg, unsigned int len) {
 				respbuf[0] = mainGame->LocalPlayer(1);
 				respbuf[1] = LOCATION_MZONE;
 				filter = (mainGame->dField.selectable_field >> 16) & 0x7f;
-			} else if (mainGame->dField.selectable_field & 0x1f000000) {
+			} else if (mainGame->dField.selectable_field & 0x3f000000) {
 				respbuf[0] = mainGame->LocalPlayer(1);
 				respbuf[1] = LOCATION_SZONE;
-				filter = (mainGame->dField.selectable_field >> 24) & 0x1f;
+				filter = (mainGame->dField.selectable_field >> 24) & 0x3f;
 			} else {
 				respbuf[0] = mainGame->LocalPlayer(1);
 				respbuf[1] = LOCATION_SZONE;
