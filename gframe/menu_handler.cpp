@@ -193,6 +193,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				mainGame->btn23333->setEnabled(true);
 				mainGame->btn7210->setEnabled(true);
 				mainGame->btn222->setEnabled(true);
+				mainGame->btnSP->setEnabled(true);
 				mainGame->btnSCExit->setEnabled(true);
 				mainGame->ShowElement(mainGame->wSC);
 				mainGame->PopupElement(mainGame->wSC);
@@ -273,6 +274,18 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			case BUTTON_NK: {
 				wcscpy(mainGame->gameConf.lasthost, L"duelstart.com");
 				wcscpy(mainGame->gameConf.lastport, L"2333");
+				wchar_t buf[256];
+				wchar_t buff[256];
+				myswprintf(buf, L"%s", mainGame->gameConf.lasthost);
+				mainGame->ebJoinHost->setText(buf);
+				myswprintf(buff, L"%s", mainGame->gameConf.lastport);
+				mainGame->ebJoinPort->setText(buff);
+				mainGame->HideElement(mainGame->wSC);
+				break;
+			}
+			case BUTTON_SP: {
+				wcscpy(mainGame->gameConf.lasthost, L"mygo.surpre.pro");
+				wcscpy(mainGame->gameConf.lastport, L"888");
 				wchar_t buf[256];
 				wchar_t buff[256];
 				myswprintf(buf, L"%s", mainGame->gameConf.lasthost);

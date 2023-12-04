@@ -401,6 +401,7 @@ public:
 	irr::gui::IGUIButton* btn765;
 	irr::gui::IGUIButton* btnJP;
 	irr::gui::IGUIButton* btnNK;
+	irr::gui::IGUIButton* btnSP;
 	irr::gui::IGUIButton* btnSCExit;
 	//room code
 	irr::gui::IGUIWindow* wRM;
@@ -847,6 +848,7 @@ extern Game* mainGame;
 #define BUTTON_JP						400
 #define BUTTON_NK						401
 #define BUTTON_SC_EXIT					402
+#define BUTTON_SP						800
 
 #define BUTTON_ROOM_CODE				501
 #define BUTTON_RM1						502
