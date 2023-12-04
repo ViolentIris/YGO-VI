@@ -848,7 +848,7 @@ extern Game* mainGame;
 #define BUTTON_JP						400
 #define BUTTON_NK						401
 #define BUTTON_SC_EXIT					402
-#define BUTTON_SP						800
+#define BUTTON_SP						521
 
 #define BUTTON_ROOM_CODE				501
 #define BUTTON_RM1						502

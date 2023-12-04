@@ -1901,7 +1901,7 @@ void Game::OnResize() {
 		btnCRpos.LowerRightCorner.X - 860,
 		btnCRpos.LowerRightCorner.Y - 400,
 		btnCRpos.LowerRightCorner.X - 580,
-		btnCRpos.LowerRightCorner.Y - 83));
+		btnCRpos.LowerRightCorner.Y - 63));
 	wRM->setRelativePosition(recti(
 		btnCRpos.LowerRightCorner.X - 530,
 		btnCRpos.LowerRightCorner.Y - 455,
