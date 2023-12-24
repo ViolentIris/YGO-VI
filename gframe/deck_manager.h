@@ -5,6 +5,7 @@
 #include "client_card.h"
 #include <unordered_map>
 #include <vector>
+#include <sstream>
 
 namespace ygo {
 

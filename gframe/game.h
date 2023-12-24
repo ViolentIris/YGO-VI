@@ -65,33 +65,33 @@ struct Config {
 };
 
 struct DuelInfo {
-	bool isStarted;
-	bool isFinished;
-	bool isReplay;
-	bool isReplaySkiping;
-	bool isFirst;
-	bool isTag;
-	bool isSingleMode;
-	bool is_shuffling;
-	bool is_swapped;
-	bool tag_player[2];
-	int lp[2];
-	int start_lp;
+	bool isStarted{ false };
+	bool isFinished{ false };
+	bool isReplay{ false };
+	bool isReplaySkiping{ false };
+	bool isFirst{ false };
+	bool isTag{ false };
+	bool isSingleMode{ false };
+	bool is_shuffling{ false };
+	bool tag_player[2]{ false };
+	bool isReplaySwapped{ false };
+	int lp[2]{ 0 };
+	int start_lp{ 0 };
+	int duel_rule{ 0 };
+	int turn{ 0 };
+	short curMsg{ 0 };
+	wchar_t hostname[20]{ 0 };
+	wchar_t clientname[20]{ 0 };
+	wchar_t hostname_tag[20]{ 0 };
+	wchar_t clientname_tag[20]{ 0 };
+	wchar_t strLP[2][16]{ 0 };
+	wchar_t* vic_string{ 0 };
+	unsigned char player_type{ 0 };
+	unsigned char time_player{ 0 };
+	unsigned short time_limit{ 0 };
+	unsigned short time_left[2]{ 0 };
 	int card_count[2];
 	int total_attack[2];
-	int duel_rule;
-	int turn;
-	short curMsg;
-	wchar_t hostname[20];
-	wchar_t clientname[20];
-	wchar_t hostname_tag[20];
-	wchar_t clientname_tag[20];
-	wchar_t strLP[2][16];
-	wchar_t* vic_string;
-	unsigned char player_type;
-	unsigned char time_player;
-	unsigned short time_limit;
-	unsigned short time_left[2];
 	wchar_t str_time_left[2][16];
 	video::SColor time_color[2];
 	wchar_t str_card_count[2][16];
@@ -100,6 +100,7 @@ struct DuelInfo {
 	video::SColor total_attack_color[2];
 	bool isReplaySwapped;
 	std::vector<unsigned int> announce_cache;
+	void Clear();
 };
 
 struct BotInfo {

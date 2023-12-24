@@ -5,7 +5,6 @@
 namespace ygo {
 
 const wchar_t* DataManager::unknown_string = L"???";
-wchar_t DataManager::strBuffer[4096];
 byte DataManager::scriptBuffer[0x20000];
 IFileSystem* DataManager::FileSystem;
 DataManager dataManager;
@@ -37,6 +36,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 		return Error(&db);
 	CardDataC cd;
 	CardString cs;
+	wchar_t strBuffer[4096];
 	int step = 0;
 	do {
 		step = sqlite3_step(pStmt);
@@ -62,7 +62,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 			cd.race = sqlite3_column_int(pStmt, 8);
 			cd.attribute = sqlite3_column_int(pStmt, 9);
 			cd.category = sqlite3_column_int(pStmt, 10);
-			_datas.insert(std::make_pair(cd.code, cd));
+			_datas[cd.code] = cd;
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
 				BufferIO::DecodeUTF8(text, strBuffer);
 				cs.name = strBuffer;
@@ -77,7 +77,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 					cs.desc[i] = strBuffer;
 				}
 			}
-			_strings.emplace(cd.code, cs);
+			_strings[cd.code] = cs;
 		}
 	} while(step != SQLITE_DONE);
 	sqlite3_finalize(pStmt);
@@ -94,7 +94,7 @@ bool DataManager::LoadStrings(const char* file) {
 		ReadStringConfLine(linebuf);
 	}
 	fclose(fp);
-	for(int i = 0; i < 255; ++i)
+	for(int i = 0; i < 301; ++i)
 		myswprintf(numStrings[i], L"%d", i);
 	return true;
 }
@@ -118,6 +118,7 @@ void DataManager::ReadStringConfLine(const char* linebuf) {
 		return;
 	char strbuf[256];
 	int value;
+	wchar_t strBuffer[4096];
 	sscanf(linebuf, "!%s", strbuf);
 	if(!strcmp(strbuf, "system")) {
 		sscanf(&linebuf[7], "%d %240[^\n]", &value, strbuf);
@@ -138,6 +139,7 @@ void DataManager::ReadStringConfLine(const char* linebuf) {
 	}
 }
 bool DataManager::Error(spmemvfs_db_t* pDB, sqlite3_stmt* pStmt) {
+	wchar_t strBuffer[4096];
 	BufferIO::DecodeUTF8(sqlite3_errmsg(pDB->handle), strBuffer);
 	if(pStmt)
 		sqlite3_finalize(pStmt);
@@ -145,12 +147,25 @@ bool DataManager::Error(spmemvfs_db_t* pDB, sqlite3_stmt* pStmt) {
 	spmemvfs_env_fini();
 	return false;
 }
-bool DataManager::GetData(int code, CardData* pData) {
+bool DataManager::GetData(unsigned int code, CardData* pData) {
 	auto cdit = _datas.find(code);
 	if(cdit == _datas.end())
 		return false;
-	if(pData)
-		*pData = *((CardData*)&cdit->second);
+	auto data = cdit->second;
+	if (pData) {
+		pData->code = data.code;
+		pData->alias = data.alias;
+		pData->setcode = data.setcode;
+		pData->type = data.type;
+		pData->level = data.level;
+		pData->attribute = data.attribute;
+		pData->race = data.race;
+		pData->attack = data.attack;
+		pData->defense = data.defense;
+		pData->lscale = data.lscale;
+		pData->rscale = data.rscale;
+		pData->link_marker = data.link_marker;
+	}
 	return true;
 }
 code_pointer DataManager::GetCodePointer(int code) {
@@ -182,11 +197,11 @@ const wchar_t* DataManager::GetText(int code) {
 		return csit->second.text.c_str();
 	return unknown_string;
 }
-const wchar_t* DataManager::GetDesc(int strCode) {
-	if(strCode < 10000)
+const wchar_t* DataManager::GetDesc(unsigned int strCode) {
+	if(strCode < 10000u)
 		return GetSysString(strCode);
-	int code = strCode >> 4;
-	int offset = strCode & 0xf;
+	unsigned int code = (strCode >> 4) & 0x0fffffff;
+	unsigned int offset = strCode & 0xf;
 	auto csit = _strings.find(code);
 	if(csit == _strings.end())
 		return unknown_string;
@@ -223,7 +238,7 @@ const wchar_t* DataManager::GetSetName(int code) {
 unsigned int DataManager::GetSetCode(const wchar_t* setname) {
 	for(auto csit = _setnameStrings.begin(); csit != _setnameStrings.end(); ++csit) {
 		auto xpos = csit->second.find_first_of(L'|');//setname|another setname or extra info
-		if(csit->second.compare(0, xpos, setname) == 0 || csit->second.compare(xpos + 1, csit->second.length(), setname) == 0 || mainGame->CheckRegEx(csit->second, setname, true))
+		if(csit->second.compare(0, xpos, setname) == 0 || csit->second.compare(xpos + 1, csit->second.length(), setname) == 0)
 			return csit->first;
 	}
 	return 0;
@@ -344,27 +359,26 @@ const wchar_t* DataManager::FormatLinkMarker(int link_marker) {
 		BufferIO::CopyWStrRef(L"[\u2198]", p, 4);
 	return lmBuffer;
 }
-int DataManager::CardReader(int code, void* pData) {
-	if(!dataManager.GetData(code, (CardData*)pData))
-		memset(pData, 0, sizeof(CardData));
+uint32 DataManager::CardReader(uint32 code, card_data* pData) {
+	if (!dataManager.GetData(code, pData))
+		pData->clear();
 	return 0;
 }
 byte* DataManager::ScriptReaderEx(const char* script_name, int* slen) {
-	byte* buffer = ScriptReaderExSingle("specials/", script_name, slen, 9);
-	if(buffer)
-		return buffer;
-	buffer = ScriptReaderExSingle("beta/", script_name, slen);
-	if(buffer)
-		return buffer;
-	buffer = ScriptReaderExSingle("expansions/", script_name, slen);
-	if(buffer)
-		return buffer;
-	return ScriptReaderExSingle("", script_name, slen);
-}
-byte* DataManager::ScriptReaderExSingle(const char* path, const char* script_name, int* slen, int pre_len) {
-	char sname[256];
-	sprintf(sname, "%s%s", path, script_name + pre_len); //default script name: ./script/c%d.lua
-	return ScriptReader(sname, slen);
+	// default script name: ./script/c%d.lua
+	char first[256];
+	char second[256];
+	if(mainGame->gameConf.prefer_expansion_script) {
+		sprintf(first, "expansions/%s", script_name + 2);
+		sprintf(second, "%s", script_name + 2);
+	} else {
+		sprintf(first, "%s", script_name + 2);
+		sprintf(second, "expansions/%s", script_name + 2);
+	}
+	if(ScriptReader(first, slen))
+		return scriptBuffer;
+	else
+		return ScriptReader(second, slen);
 }
 byte* DataManager::ScriptReader(const char* script_name, int* slen) {
 #ifdef _WIN32
