@@ -899,7 +899,7 @@ extern Game* mainGame;
 #define DEFAULT_DUEL_RULE			5
 
 #define CARD_ARTWORK_VERSIONS_OFFSET	10
-
+#define MAX_LAYER_COUNT	6
 extern bool delay_swap;
 extern int swap_player;
 #endif // GAME_H
