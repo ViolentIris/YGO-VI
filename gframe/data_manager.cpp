@@ -62,7 +62,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 			cd.race = sqlite3_column_int(pStmt, 8);
 			cd.attribute = sqlite3_column_int(pStmt, 9);
 			cd.category = sqlite3_column_int(pStmt, 10);
-			_datas[cd.code] = cd;
+			_datas.insert(std::make_pair(cd.code, cd));
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
 				BufferIO::DecodeUTF8(text, strBuffer);
 				cs.name = strBuffer;
@@ -77,7 +77,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 					cs.desc[i] = strBuffer;
 				}
 			}
-			_strings[cd.code] = cs;
+			_strings.emplace(cd.code, cs);
 		}
 	} while(step != SQLITE_DONE);
 	sqlite3_finalize(pStmt);
@@ -118,7 +118,6 @@ void DataManager::ReadStringConfLine(const char* linebuf) {
 		return;
 	char strbuf[256];
 	int value;
-	wchar_t strBuffer[4096];
 	sscanf(linebuf, "!%s", strbuf);
 	if(!strcmp(strbuf, "system")) {
 		sscanf(&linebuf[7], "%d %240[^\n]", &value, strbuf);
@@ -139,7 +138,6 @@ void DataManager::ReadStringConfLine(const char* linebuf) {
 	}
 }
 bool DataManager::Error(spmemvfs_db_t* pDB, sqlite3_stmt* pStmt) {
-	wchar_t strBuffer[4096];
 	BufferIO::DecodeUTF8(sqlite3_errmsg(pDB->handle), strBuffer);
 	if(pStmt)
 		sqlite3_finalize(pStmt);
@@ -359,9 +357,9 @@ const wchar_t* DataManager::FormatLinkMarker(int link_marker) {
 		BufferIO::CopyWStrRef(L"[\u2198]", p, 4);
 	return lmBuffer;
 }
-uint32 DataManager::CardReader(uint32 code, card_data* pData) {
-	if (!dataManager.GetData(code, pData))
-		pData->clear();
+int DataManager::CardReader(int code, void* pData) {
+	if(!dataManager.GetData(code, (CardData*)pData))
+		memset(pData, 0, sizeof(CardData));
 	return 0;
 }
 byte* DataManager::ScriptReaderEx(const char* script_name, int* slen) {
