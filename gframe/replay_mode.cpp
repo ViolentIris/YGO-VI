@@ -64,9 +64,9 @@ int ReplayMode::ReplayThread() {
 	mainGame->dInfo.isSingleMode = !!(rh.flag & REPLAY_SINGLE_MODE);
 	mainGame->dInfo.tag_player[0] = false;
 	mainGame->dInfo.tag_player[1] = false;
-	set_script_reader(DataManager::ScriptReaderEx);
-	set_card_reader(DataManager::CardReader);
-	set_message_handler(ReplayMode::MessageHandler);
+	set_script_reader((script_reader)DataManager::ScriptReaderEx);
+	set_card_reader((card_reader)DataManager::CardReader);
+	set_message_handler((message_handler)MessageHandler);
 	if(!StartDuel()) {
 		EndDuel();
 		return 0;
@@ -249,7 +249,8 @@ void ReplayMode::EndDuel() {
 		mainGame->actionSignal.Reset();
 		mainGame->gMutex.lock();
 		mainGame->stMessage->setText(dataManager.GetSysString(1501));
-		mainGame->HideElement(mainGame->wCardSelect);
+		if(mainGame->wCardSelect->isVisible())
+			mainGame->HideElement(mainGame->wCardSelect);
 		mainGame->PopupElement(mainGame->wMessage);
 		mainGame->gMutex.unlock();
 		mainGame->actionSignal.Wait();

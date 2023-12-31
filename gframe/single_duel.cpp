@@ -351,8 +351,6 @@ void SingleDuel::StartDuel(DuelPlayer* dp) {
 	hand_result[1] = 0;
 	players[0]->state = CTOS_HAND_RESULT;
 	players[1]->state = CTOS_HAND_RESULT;
-	players[0]->player_id = 0;
-	players[1]->player_id = 1;
 	duel_stage = DUEL_STAGE_FINGER;
 }
 void SingleDuel::HandResult(DuelPlayer* dp, unsigned char res) {
@@ -400,6 +398,8 @@ void SingleDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 		return;
 	duel_stage = DUEL_STAGE_DUELING;
 	bool swapped = false;
+	pplayer[0] = players[0];
+	pplayer[1] = players[1];
 	if((tp && dp->type == 1) || (!tp && dp->type == 0)) {
 		DuelPlayer* p = players[0];
 		players[0] = players[1];
@@ -432,9 +432,9 @@ void SingleDuel::TPResult(DuelPlayer* dp, unsigned char tp) {
 	}
 	time_limit[0] = host_info.time_limit;
 	time_limit[1] = host_info.time_limit;
-	set_script_reader(DataManager::ScriptReaderEx);
-	set_card_reader(DataManager::CardReader);
-	set_message_handler(SingleDuel::MessageHandler);
+	set_script_reader((script_reader)DataManager::ScriptReaderEx);
+	set_card_reader((card_reader)DataManager::CardReader);
+	set_message_handler((message_handler)SingleDuel::MessageHandler);
 	pduel = create_duel(duel_seed);
 	set_player_info(pduel, 0, host_info.start_lp, host_info.start_hand, host_info.draw_count);
 	set_player_info(pduel, 1, host_info.start_lp, host_info.start_hand, host_info.draw_count);
@@ -562,7 +562,7 @@ void SingleDuel::DuelEndProc() {
 	}
 }
 void SingleDuel::Surrender(DuelPlayer* dp) {
-	if (dp->type > 1 || dp->player_id > 1 || !pduel)
+	if(dp->type > 1 || !pduel)
 		return;
 	unsigned char wbuf[3];
 	uint32 player = dp->type;
@@ -573,9 +573,13 @@ void SingleDuel::Surrender(DuelPlayer* dp) {
 	NetServer::ReSendToPlayer(players[1]);
 	for(auto oit = observers.begin(); oit != observers.end(); ++oit)
 		NetServer::ReSendToPlayer(*oit);
-	match_result[duel_count] = 1 - dp->player_id;
-	++duel_count;
-	tp_player = player;
+	if(players[player] == pplayer[player]) {
+		match_result[duel_count++] = 1 - player;
+		tp_player = player;
+	} else {
+		match_result[duel_count++] = player;
+		tp_player = 1 - player;
+	}
 	EndDuel();
 	DuelEndProc();
 	event_del(etimer);
@@ -634,14 +638,15 @@ int SingleDuel::Analyze(unsigned char* msgbuffer, unsigned int len) {
 			for(auto oit = observers.begin(); oit != observers.end(); ++oit)
 				NetServer::ReSendToPlayer(*oit);
 			if(player > 1) {
-				match_result[duel_count] = 2;
+				match_result[duel_count++] = 2;
 				tp_player = 1 - tp_player;
-			}
-			else {
-				match_result[duel_count] = players[player]->player_id;
+			} else if(players[player] == pplayer[player]) {
+				match_result[duel_count++] = player;
 				tp_player = 1 - player;
+			} else {
+				match_result[duel_count++] = 1 - player;
+				tp_player = player;
 			}
-			++duel_count;
 			EndDuel();
 			return 2;
 		}
