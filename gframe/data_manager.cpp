@@ -5,6 +5,7 @@
 namespace ygo {
 
 const wchar_t* DataManager::unknown_string = L"???";
+wchar_t DataManager::strBuffer[4096];
 byte DataManager::scriptBuffer[0x20000];
 IFileSystem* DataManager::FileSystem;
 DataManager dataManager;
@@ -36,7 +37,6 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 		return Error(&db);
 	CardDataC cd;
 	CardString cs;
-	wchar_t strBuffer[4096];
 	int step = 0;
 	do {
 		step = sqlite3_step(pStmt);
@@ -365,20 +365,21 @@ uint32 DataManager::CardReader(uint32 code, card_data* pData) {
 	return 0;
 }
 byte* DataManager::ScriptReaderEx(const char* script_name, int* slen) {
-	// default script name: ./script/c%d.lua
-	char first[256];
-	char second[256];
-	if(mainGame->gameConf.prefer_expansion_script) {
-		sprintf(first, "expansions/%s", script_name + 2);
-		sprintf(second, "%s", script_name + 2);
-	} else {
-		sprintf(first, "%s", script_name + 2);
-		sprintf(second, "expansions/%s", script_name + 2);
-	}
-	if(ScriptReader(first, slen))
-		return scriptBuffer;
-	else
-		return ScriptReader(second, slen);
+	byte* buffer = ScriptReaderExSingle("specials/", script_name, slen, 9);
+	if(buffer)
+		return buffer;
+	buffer = ScriptReaderExSingle("beta/", script_name, slen);
+	if(buffer)
+		return buffer;
+	buffer = ScriptReaderExSingle("expansions/", script_name, slen);
+	if(buffer)
+		return buffer;
+	return ScriptReaderExSingle("", script_name, slen);
+}
+byte* DataManager::ScriptReaderExSingle(const char* path, const char* script_name, int* slen, int pre_len) {
+	char sname[256];
+	sprintf(sname, "%s%s", path, script_name + pre_len); //default script name: ./script/c%d.lua
+	return ScriptReader(sname, slen);
 }
 byte* DataManager::ScriptReader(const char* script_name, int* slen) {
 #ifdef _WIN32

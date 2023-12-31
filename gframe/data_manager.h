@@ -55,6 +55,7 @@ public:
 	static const wchar_t* unknown_string;
 	static uint32 CardReader(uint32, card_data*);
 	static byte* ScriptReaderEx(const char* script_name, int* slen);
+	static byte* ScriptReaderExSingle(const char* path, const char* script_name, int* slen, int pre_len = 2);
 	static byte* ScriptReader(const char* script_name, int* slen);
 	static IFileSystem* FileSystem;
 };
