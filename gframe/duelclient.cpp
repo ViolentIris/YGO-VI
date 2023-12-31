@@ -804,7 +804,7 @@ void DuelClient::HandleSTOCPacketLan(unsigned char* data, unsigned int len) {
 		mainGame->btnChainWhenAvail->setVisible(false);
 		mainGame->btnCancelOrFinish->setVisible(false);
 		mainGame->btnShuffle->setVisible(false);
-		char* prep = pdata;
+		auto prep = pdata;
 		Replay new_replay;
 		memcpy(&new_replay.pheader, prep, sizeof(ReplayHeader));
 		time_t starttime;
