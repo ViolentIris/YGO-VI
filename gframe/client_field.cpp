@@ -334,6 +334,7 @@ void ClientField::UpdateCard(int controler, int location, int sequence, unsigned
 	int len = BufferIO::ReadInt32(data);
 	if (pcard && len > LEN_HEADER)
 		pcard->UpdateInfo(data);
+	RefreshCardCountDisplay();
 }
 void ClientField::UpdateFieldCard(int controler, int location, unsigned char* data) {
 	std::vector<ClientCard*>* lst = 0;
