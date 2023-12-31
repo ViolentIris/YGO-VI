@@ -2668,8 +2668,8 @@ int DuelClient::ClientAnalyze(unsigned char* msg, unsigned int len) {
 				mainGame->gMutex.unlock();
 				mainGame->dField.GetCardLocation(pcard, &pcard->curPos, &pcard->curRot, true);
 				pcard->curAlpha = 5;
-				mainGame->dField.FadeCard(pcard, 255, appear);
-				mainGame->WaitFrameSignal(appear);
+				mainGame->dField.FadeCard(pcard, 255, 20);
+				mainGame->WaitFrameSignal(20);
 			} else
 				mainGame->dField.AddCard(pcard, cc, cl, cs);
 		} else if (cl == 0) {
