@@ -73,19 +73,19 @@ struct DuelInfo {
 	bool isTag{ false };
 	bool isSingleMode{ false };
 	bool is_shuffling{ false };
-	bool tag_player[2]{ false };
+	bool tag_player[2]{};
 	bool isReplaySwapped{ false };
-	int lp[2]{ 0 };
+	int lp[2]{};
 	int start_lp{ 0 };
 	int duel_rule{ 0 };
 	int turn{ 0 };
 	short curMsg{ 0 };
-	wchar_t hostname[20]{ 0 };
-	wchar_t clientname[20]{ 0 };
-	wchar_t hostname_tag[20]{ 0 };
-	wchar_t clientname_tag[20]{ 0 };
-	wchar_t strLP[2][16]{ 0 };
-	wchar_t* vic_string{ 0 };
+	wchar_t hostname[20]{};
+	wchar_t clientname[20]{};
+	wchar_t hostname_tag[20]{};
+	wchar_t clientname_tag[20]{};
+	wchar_t strLP[2][16]{};
+	wchar_t* vic_string{ nullptr };
 	unsigned char player_type{ 0 };
 	unsigned char time_player{ 0 };
 	unsigned short time_limit{ 0 };
@@ -225,8 +225,8 @@ public:
 
 	int hideChatTimer;
 	bool hideChat;
-	int chatTiming[8];
-	int chatType[8];
+	int chatTiming[8]{};
+	int chatType[8]{};
 	unsigned short linePatternD3D;
 	unsigned short linePatternGL;
 	int waitFrame;
