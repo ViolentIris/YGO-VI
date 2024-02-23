@@ -18,8 +18,8 @@ public:
 	void ReadStringConfLine(const char* linebuf);
 	bool Error(spmemvfs_db_t* pDB, sqlite3_stmt* pStmt = 0);
 	bool GetData(unsigned int code, CardData* pData);
-	code_pointer GetCodePointer(unsigned int code) const;
-	string_pointer GetStringPointer(unsigned int code) const;
+	const code_pointer GetCodePointer(unsigned int code);
+	const string_pointer GetStringPointer(unsigned int code);
 	bool GetString(int code, CardString* pStr);
 	const wchar_t* GetName(int code);
 	const wchar_t* GetText(int code);
