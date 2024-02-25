@@ -1641,8 +1641,12 @@ void Game::ShowCardInfo(int code, bool resize) {
 		stSetName->setRelativePosition(rect<s32>(15, (83 + offset_arrows), 296 * xScale, (83 + offset_arrows) + offset));
 		stText->setRelativePosition(rect<s32>(15, (83 + offset_arrows) + offset, 287 * xScale, 324 * yScale));
 		scrCardText->setRelativePosition(rect<s32>(287 * xScale - 20, (83 + offset_arrows) + offset, 287 * xScale, 324 * yScale));
-	} else {
-		myswprintf(formatBuffer, L"[%ls]", dataManager.FormatType(cd.type));
+	}
+	else {
+		if (is_valid)
+			myswprintf(formatBuffer, L"[%ls]", dataManager.FormatType(cit->second.type));
+		else
+			myswprintf(formatBuffer, L"[%ls]", dataManager.FormatType(0));
 		stInfo->setText(formatBuffer);
 		stDataInfo->setRelativePosition(recti(15, 60, 300 * xScale - 13, 83));
 		stDataInfo->setText(L"");
