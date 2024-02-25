@@ -178,7 +178,7 @@ bool DataManager::GetData(unsigned int code, CardData* pData) {
 	if (pData) {
 		pData->code = data.code;
 		pData->alias = data.alias;
-		pData->setcode = data.setcode;
+		memcpy(pData->setcode, data.setcode, SIZE_SETCODE);
 		pData->type = data.type;
 		pData->level = data.level;
 		pData->attribute = data.attribute;
