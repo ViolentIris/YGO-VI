@@ -14,7 +14,6 @@ using CardData = card_data;
 struct CardDataC {
 	unsigned int code;
 	unsigned int alias;
-	unsigned long long setcode;
 	unsigned int type;
 	unsigned int level;
 	unsigned int attribute;
