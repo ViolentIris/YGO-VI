@@ -1565,10 +1565,11 @@ void Game::ShowCardInfo(int code, bool resize) {
 	stName->setText(formatBuffer);
 	int offset = 0;
 	if(!chkHideSetname->isChecked()) {
-		auto& cd = cit->second;
-		auto target = cit;
-		if (cd.alias && dataManager.GetCodePointer(cd.alias) != dataManager.datas_end) {
-			target = dataManager.GetCodePointer(cd.alias);
+		unsigned long long sc = cd.setcode;
+		if(cd.alias) {
+			auto aptr = dataManager._datas.find(cd.alias);
+			if(aptr != dataManager._datas.end())
+				sc = aptr->second.setcode;
 		}
 		if(sc) {
 			offset = 23;// *yScale;
