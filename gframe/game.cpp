@@ -1564,25 +1564,23 @@ void Game::ShowCardInfo(int code, bool resize) {
 	else myswprintf(formatBuffer, L"%ls[%08d]", dataManager.GetName(code), code);
 	stName->setText(formatBuffer);
 	int offset = 0;
-	if (is_valid && !gameConf.hide_setname) {
-		auto& cd = cit->second;
-		auto target = cit;
-		if (cd.alias && dataManager.GetCodePointer(cd.alias) != dataManager.datas_end) {
-			target = dataManager.GetCodePointer(cd.alias);
+	if(!chkHideSetname->isChecked()) {
+		unsigned long long sc = cd.setcode;
+		if(cd.alias) {
+			auto aptr = dataManager._datas.find(cd.alias);
+			if(aptr != dataManager._datas.end())
+				sc = aptr->second.setcode;
 		}
-		if (target->second.setcode[0]) {
+		if(sc) {
 			offset = 23;// *yScale;
-			myswprintf(formatBuffer, L"%ls%ls", dataManager.GetSysString(1329), dataManager.FormatSetName(target->second.setcode));
+			myswprintf(formatBuffer, L"%ls%ls", dataManager.GetSysString(1329), dataManager.FormatSetName(sc));
 			stSetName->setText(formatBuffer);
-		}
-		else
+		} else
 			stSetName->setText(L"");
-	}
-	else {
+	} else {
 		stSetName->setText(L"");
 	}
-	if(is_valid && cit->second.type & TYPE_MONSTER) {
-		auto& cd = cit->second;
+	if(cd.type & TYPE_MONSTER) {
 		myswprintf(formatBuffer, L"[%ls] %ls/%ls", dataManager.FormatType(cd.type), dataManager.FormatRace(cd.race), dataManager.FormatAttribute(cd.attribute));
 		stInfo->setText(formatBuffer);
 		int offset_info = 0;
