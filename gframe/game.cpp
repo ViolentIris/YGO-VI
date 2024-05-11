@@ -24,6 +24,7 @@ Game* mainGame;
 
 void DuelInfo::Clear() {
 	isStarted = false;
+	isInDuel = false;
 	isFinished = false;
 	isReplay = false;
 	isReplaySkiping = false;
@@ -492,7 +493,7 @@ bool Game::Initialize() {
 	scrTabSystem->setSmallStep(1);
 	scrTabSystem->setVisible(false);
 	posY = 0;
-	chkIgnore1 = env->addCheckBox(false, rect<s32>(posX, posY, posX + 260, posY + 25), tabSystem, -1, dataManager.GetSysString(1290));
+	chkIgnore1 = env->addCheckBox(false, rect<s32>(posX, posY, posX + 260, posY + 25), tabSystem, CHECKBOX_DISABLE_CHAT, dataManager.GetSysString(1290));
 	chkIgnore1->setChecked(gameConf.chkIgnore1 != 0);
 	posY += 30;
 	chkIgnore2 = env->addCheckBox(false, rect<s32>(posX, posY, posX + 260, posY + 25), tabSystem, -1, dataManager.GetSysString(1291));
@@ -717,7 +718,7 @@ bool Game::Initialize() {
 	btnShuffleDeck = env->addButton(rect<s32>(5, 99, 55, 120), wDeckEdit, BUTTON_SHUFFLE_DECK, dataManager.GetSysString(1307));
 	btnSortDeck = env->addButton(rect<s32>(60, 99, 110, 120), wDeckEdit, BUTTON_SORT_DECK, dataManager.GetSysString(1305));
 	btnClearDeck = env->addButton(rect<s32>(115, 99, 165, 120), wDeckEdit, BUTTON_CLEAR_DECK, dataManager.GetSysString(1304));
-	btnSideOK = env->addButton(rect<s32>(510, 40, 820, 80), 0, BUTTON_SIDE_OK, dataManager.GetSysString(1334));
+	btnSideOK = env->addButton(rect<s32>(400, 40, 710, 80), 0, BUTTON_SIDE_OK, dataManager.GetSysString(1334));
 	btnSideOK->setVisible(false);
 	btnSideShuffle = env->addButton(rect<s32>(310, 100, 370, 130), 0, BUTTON_SHUFFLE_DECK, dataManager.GetSysString(1307));
 	btnSideShuffle->setVisible(false);
@@ -1152,7 +1153,7 @@ std::wstring Game::SetStaticText(irr::gui::IGUIStaticText* pControl, u32 cWidth,
 		strBuffer[pbuffer++] = c;
 	}
 	strBuffer[pbuffer] = 0;
-	pControl->setText(strBuffer);
+	if(pControl) pControl->setText(strBuffer);
 	ret.assign(strBuffer);
 	return ret;
 }
@@ -1676,7 +1677,7 @@ void Game::AddLog(const wchar_t* msg, int param) {
 		lstLog->setSelected(-1);
 	}
 }
-void Game::AddChatMsg(const wchar_t* msg, int player) {
+void Game::AddChatMsg(const wchar_t* msg, int player, bool play_sound) {
 	for(int i = 7; i > 0; --i) {
 		chatMsg[i] = chatMsg[i - 1];
 		chatTiming[i] = chatTiming[i - 1];
@@ -1685,23 +1686,22 @@ void Game::AddChatMsg(const wchar_t* msg, int player) {
 	chatMsg[0].clear();
 	chatTiming[0] = 1200;
 	chatType[0] = player;
+	if(play_sound)
+		soundManager.PlaySoundEffect(SOUND_CHAT);
 	switch(player) {
 	case 0: //from host
 		chatMsg[0].append(dInfo.hostname);
 		chatMsg[0].append(L": ");
 		break;
 	case 1: //from client
-		soundManager.PlaySoundEffect(SOUND_CHAT);
 		chatMsg[0].append(dInfo.clientname);
 		chatMsg[0].append(L": ");
 		break;
 	case 2: //host tag
-		soundManager.PlaySoundEffect(SOUND_CHAT);
 		chatMsg[0].append(dInfo.hostname_tag);
 		chatMsg[0].append(L": ");
 		break;
 	case 3: //client tag
-		soundManager.PlaySoundEffect(SOUND_CHAT);
 		chatMsg[0].append(dInfo.clientname_tag);
 		chatMsg[0].append(L": ");
 		break;
@@ -1710,7 +1710,6 @@ void Game::AddChatMsg(const wchar_t* msg, int player) {
 		chatMsg[0].append(L": ");
 		break;
 	case 8: //system custom message, no prefix.
-		soundManager.PlaySoundEffect(SOUND_CHAT);
 		chatMsg[0].append(L"[System]: ");
 		break;
 	case 9: //error message
@@ -1850,10 +1849,46 @@ void Game::CloseDuelWindow() {
 	lstHostList->clear();
 	DuelClient::hosts.clear();
 	ClearTextures();
+	ResizeChatInputWindow();
 	closeDoneSignal.Set();
 }
-int Game::LocalPlayer(int player) {
-	return dInfo.isFirst ? player : 1 - player;
+int Game::LocalPlayer(int player) const {
+	int pid = player ? 1 : 0;
+	return dInfo.isFirst ? pid : 1 - pid;
+}
+int Game::OppositePlayer(int player) {
+	auto player_side_bit = dInfo.isTag ? 0x2 : 0x1;
+	return player ^ player_side_bit;
+}
+int Game::ChatLocalPlayer(int player) {
+	if(player > 3)
+		return player;
+	bool is_self;
+	if(dInfo.isStarted || is_siding) {
+		if(dInfo.isInDuel)
+			// when in duel
+			player = mainGame->dInfo.isFirst ? player : OppositePlayer(player);
+		else {
+			// when changing side or waiting tp result
+			auto selftype_boundary = dInfo.isTag ? 2 : 1;
+			if(DuelClient::selftype >= selftype_boundary && DuelClient::selftype < 4)
+				player = OppositePlayer(player);
+		}
+		if (DuelClient::selftype >= 4) {
+			is_self = false;
+		} else if (dInfo.isTag) {
+			is_self =  (player & 0x2) == 0 && (player & 0x1) == (DuelClient::selftype & 0x1);
+		} else {
+			is_self = player == 0;
+		}
+	} else {
+		// when in lobby
+		is_self = player == DuelClient::selftype;
+	}
+	if(dInfo.isTag && (player == 1 || player == 2)) {
+		player = 3 - player;
+	}
+	return player | (is_self ? 0x10 : 0);
 }
 const wchar_t* Game::LocalName(int local_player) {
 	return local_player == 0 ? dInfo.hostname : dInfo.clientname;
@@ -2055,8 +2090,7 @@ void Game::OnResize() {
 	btnM2->setRelativePosition(Resize(160, 0, 210, 20));
 	btnEP->setRelativePosition(Resize(320, 0, 370, 20));
 
-	wChat->setRelativePosition(ResizeWin(wInfos->getRelativePosition().LowerRightCorner.X + 6, 615, 1020, 640, true));
-	ebChatInput->setRelativePosition(recti(3, 2, window_size.Width - wChat->getRelativePosition().UpperLeftCorner.X - 6, 22));
+	ResizeChatInputWindow();
 
 	btnLeaveGame->setRelativePosition(Resize(205, 5, 295, 80));
 	wReplayControl->setRelativePosition(Resize(205, 143, 295, 273));
@@ -2075,6 +2109,12 @@ void Game::OnResize() {
 	btnCancelOrFinish->setRelativePosition(Resize(205, 230, 295, 265));
 
 	imageManager.ClearTexture();
+}
+void Game::ResizeChatInputWindow() {
+	s32 x = wInfos->getRelativePosition().LowerRightCorner.X + 6;
+	if(is_building) x = 802 * xScale;
+	wChat->setRelativePosition(recti(x, window_size.Height - 25, window_size.Width, window_size.Height));
+	ebChatInput->setRelativePosition(recti(3, 2, window_size.Width - wChat->getRelativePosition().UpperLeftCorner.X - 6, 22));
 }
 recti Game::Resize(s32 x, s32 y, s32 x2, s32 y2) {
 	x = x * xScale;
