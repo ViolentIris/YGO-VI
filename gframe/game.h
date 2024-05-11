@@ -820,6 +820,7 @@ extern Game* mainGame;
 #define CHECKBOX_QUICK_ANIMATION	364
 #define CHECKBOX_SKIN				365
 #define CHECKBOX_D3D				366
+#define CHECKBOX_DISABLE_CHAT		368
 
 #define COMBOBOX_SORTTYPE			370
 #define COMBOBOX_LIMIT				371
