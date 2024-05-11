@@ -10,7 +10,7 @@
 namespace ygo {
 
 struct LFList {
-	unsigned int hash;
+	unsigned int hash{};
 	std::wstring listName;
 	std::unordered_map<int, int> content;
 };
@@ -36,10 +36,13 @@ public:
 	Deck current_deck;
 	std::vector<LFList> _lfList;
 
+	static char deckBuffer[0x10000];
+
 	void LoadLFListSingle(const char* path);
 	void LoadLFList();
 	const wchar_t* GetLFListName(int lfhash);
-	int CheckDeck(Deck& deck, int lfhash, bool allow_ocg, bool allow_tcg);
+	const std::unordered_map<int, int>* GetLFListContent(int lfhash);
+	int CheckDeck(Deck& deck, int lfhash, int rule);
 	int LoadDeck(Deck& deck, int* dbuf, int mainc, int sidec);
 	bool LoadSide(Deck& deck, int* dbuf, int mainc, int sidec);
 	FILE* OpenDeckFile(const wchar_t * file, const char * mode);
