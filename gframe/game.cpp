@@ -1379,7 +1379,8 @@ void Game::LoadConfig() {
 		} else if(!strcmp(strbuf, "use_image_scale")) {
 			gameConf.use_image_scale = atoi(valbuf) > 0;
 		} else if(!strcmp(strbuf, "errorlog")) {
-			enable_log = atoi(valbuf);
+			unsigned int val = strtol(valbuf, nullptr, 10);
+			enable_log = val & 0xff;
 		} else if(!strcmp(strbuf, "textfont")) {
 			BufferIO::DecodeUTF8(valbuf, wstr);
 			int textfontsize;
@@ -1497,7 +1498,7 @@ void Game::SaveConfig() {
 	fprintf(fp, "use_d3d = %d\n", gameConf.use_d3d ? 1 : 0);
 	fprintf(fp, "use_image_scale = %d\n", gameConf.use_image_scale ? 1 : 0);
 	fprintf(fp, "antialias = %d\n", gameConf.antialias);
-	fprintf(fp, "errorlog = %d\n", enable_log);
+	fprintf(fp, "errorlog = %u\n", enable_log);
 	fprintf(fp, "game_version = %d\n", gameConf.game_version);
 	BufferIO::CopyWStr(ebNickName->getText(), gameConf.nickname, 20);
 	BufferIO::EncodeUTF8(gameConf.nickname, linebuf);
@@ -1737,7 +1738,7 @@ void Game::AddDebugMsg(const char* msg) {
 	}
 	if (enable_log & 0x2) {
 		char msgbuf[1040];
-		sprintf(msgbuf, "[Script Error]: %s", msg);
+		snprintf(msgbuf, sizeof msgbuf, "[Script Error]: %s", msg);
 		ErrorLog(msgbuf);
 	}
 }
