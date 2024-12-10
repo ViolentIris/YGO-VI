@@ -1172,7 +1172,7 @@ void Game::LoadExpansions() {
 		if(!isdir && wcsrchr(name, '.') && !mywcsncasecmp(wcsrchr(name, '.'), L".cdb", 4)) {
 			wchar_t fpath[1024];
 			myswprintf(fpath, L"./expansions/%ls", name);
-			dataManager.LoadDB(fpath);
+			dataManager.LoadDB(fpath, true);
 		}
 		if(!isdir && wcsrchr(name, '.') && (!mywcsncasecmp(wcsrchr(name, '.'), L".zip", 4) || !mywcsncasecmp(wcsrchr(name, '.'), L".ypk", 4))) {
 			wchar_t fpath[1024];
@@ -1197,7 +1197,7 @@ void Game::LoadExpansions() {
 			BufferIO::DecodeUTF8(uname, fname);
 #endif
 			if(wcsrchr(fname, '.') && !mywcsncasecmp(wcsrchr(fname, '.'), L".cdb", 4))
-				dataManager.LoadDB(fname);
+				dataManager.LoadDB(fname, true);
 			if(wcsrchr(fname, '.') && !mywcsncasecmp(wcsrchr(fname, '.'), L".conf", 5)) {
 #ifdef _WIN32
 				IReadFile* reader = DataManager::FileSystem->createAndOpenFile(fname);
