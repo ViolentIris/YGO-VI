@@ -1158,6 +1158,15 @@ std::wstring Game::SetStaticText(irr::gui::IGUIStaticText* pControl, u32 cWidth,
 	ret.assign(strBuffer);
 	return ret;
 }
+void Game::ReLoadExpansions() {
+	for (size_t i = 0; i < dataManager._expansionDatas.size(); ++i) {
+		int code = dataManager._expansionDatas[i];
+		dataManager._strings.erase(code);
+		dataManager._datas.erase(code);
+	}
+	dataManager._expansionDatas.clear();
+	LoadExpansions();
+}
 void Game::LoadExpansions() {
 	FileSystem::TraversalDir(L"./expansions", [](const wchar_t* name, bool isdir) {
 		if(!isdir && wcsrchr(name, '.') && !mywcsncasecmp(wcsrchr(name, '.'), L".cdb", 4)) {
@@ -1747,7 +1756,7 @@ void Game::ErrorLog(const char* msg) {
 	FILE* fp = fopen("error.log", "at");
 	if(!fp)
 		return;
-	time_t nowtime = time(NULL);
+	time_t nowtime = time(nullptr);
 	tm* localedtime = localtime(&nowtime);
 	char timebuf[40];
 	strftime(timebuf, 40, "%Y-%m-%d %H:%M:%S", localedtime);
@@ -2216,7 +2225,7 @@ recti Game::ResizeFit(s32 x, s32 y, s32 x2, s32 y2) {
 }
 void Game::SetWindowsIcon() {
 #ifdef _WIN32
-	HINSTANCE hInstance = (HINSTANCE)GetModuleHandleW(NULL);
+	HINSTANCE hInstance = (HINSTANCE)GetModuleHandleW(nullptr);
 	HICON hSmallIcon = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(1), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	HICON hBigIcon = (HICON)LoadImageW(hInstance, MAKEINTRESOURCEW(1), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
 	SendMessageW(hWnd, WM_SETICON, ICON_SMALL, (long)hSmallIcon);

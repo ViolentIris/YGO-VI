@@ -16,7 +16,7 @@ DataManager::DataManager() : _datas(16384), _strings(16384) {
 	strings_end = _strings.end();
 	extra_setcode = { {8512558u, {0x8f, 0x54, 0x59, 0x82, 0x13a}}, };
 }
-bool DataManager::LoadDB(const wchar_t* wfile) {
+bool DataManager::LoadDB(const wchar_t* wfile, bool expansion) {
 	char file[256];
 	BufferIO::EncodeUTF8(wfile, file);
 #ifdef _WIN32
@@ -24,7 +24,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 #else
 	IReadFile* reader = FileSystem->createAndOpenFile(file);
 #endif
-	if(reader == NULL)
+	if(reader == nullptr)
 		return false;
 	spmemvfs_db_t db;
 	spmembuffer_t* mem = (spmembuffer_t*)calloc(sizeof(spmembuffer_t), 1);
@@ -82,6 +82,7 @@ bool DataManager::LoadDB(const wchar_t* wfile) {
 			cd.attribute = sqlite3_column_int(pStmt, 9);
 			cd.category = sqlite3_column_int(pStmt, 10);
 			_datas[cd.code] = cd;
+			if (expansion) _expansionDatas.push_back(cd.code);
 			if(const char* text = (const char*)sqlite3_column_text(pStmt, 12)) {
 				BufferIO::DecodeUTF8(text, strBuffer);
 				cs.name = strBuffer;
@@ -264,7 +265,7 @@ const wchar_t* DataManager::GetCounterName(int code) {
 const wchar_t* DataManager::GetSetName(int code) {
 	auto csit = _setnameStrings.find(code);
 	if(csit == _setnameStrings.end())
-		return NULL;
+		return nullptr;
 	return csit->second.c_str();
 }
 unsigned int DataManager::GetSetCode(const wchar_t* setname) {
@@ -423,7 +424,7 @@ byte* DataManager::ScriptReader(const char* script_name, int* slen) {
 #else
 	IReadFile* reader = FileSystem->createAndOpenFile(script_name);
 #endif
-	if(reader == NULL)
+	if(reader == nullptr)
 		return 0;
 	size_t size = reader->getSize();
 	if(size > sizeof(scriptBuffer)) {

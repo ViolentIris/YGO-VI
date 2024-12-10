@@ -67,6 +67,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_OTHER: {
+				mainGame->Game::ReLoadExpansions();
 				mainGame->HideElement(mainGame->wMainMenu);
 				mainGame->ShowElement(mainGame->wOther);
 				mainGame->btnYST->setEnabled(true);
@@ -97,6 +98,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				break;
 			}
 			case BUTTON_OTHER_EXIT: {
+				mainGame->Game::ReLoadExpansions();
 				mainGame->HideElement(mainGame->wOther);
 				mainGame->ShowElement(mainGame->wMainMenu);
 				if(exit_on_return)
@@ -485,7 +487,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					BufferIO::CopyWStr(pstr, hostname, 100);
 					BufferIO::CopyWStr(mainGame->ebJoinPort->getText(), port, 6);
 					struct evutil_addrinfo hints;
-					struct evutil_addrinfo *answer = NULL;
+					struct evutil_addrinfo *answer = nullptr;
 					memset(&hints, 0, sizeof(hints));
 					hints.ai_family = AF_INET;
 					hints.ai_socktype = SOCK_STREAM;
@@ -744,7 +746,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 				int flag = 0;
 				flag += (mainGame->chkBotHand->isChecked() ? 0x1 : 0);
 				myswprintf(cmd, L"Bot.exe \"%ls\" %d %d", mainGame->botInfo[sel].command, flag, mainGame->gameConf.serverport);
-				if(!CreateProcessW(NULL, cmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+				if(!CreateProcessW(nullptr, cmd, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
 				{
 					NetServer::StopServer();
 					break;
@@ -760,7 +762,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 					sprintf(arg2, "%d", flag);
 					char arg3[8];
 					sprintf(arg3, "%d", mainGame->gameConf.serverport);
-					execl("./bot", "bot", arg1, arg2, arg3, NULL);
+					execl("./bot", "bot", arg1, arg2, arg3, nullptr);
 					exit(0);
 				} else {
 					if(!NetServer::StartServer(mainGame->gameConf.serverport))
@@ -789,6 +791,7 @@ bool MenuHandler::OnEvent(const irr::SEvent& event) {
 			}
 			case BUTTON_DECK_EDIT: {
 				mainGame->ClearChatMsg();
+				mainGame->Game::ReLoadExpansions();
 				mainGame->RefreshDeck(mainGame->cbDBDecks);
 				if(open_file && deckManager.LoadDeck(open_file_name)) {
 #ifdef WIN32
