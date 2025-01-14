@@ -1721,6 +1721,7 @@ void Game::AddChatMsg(const wchar_t* msg, int player, bool play_sound) {
 		chatMsg[0].append(L": ");
 		break;
 	case 8: //system custom message, no prefix.
+		soundManager.PlaySoundEffect(SOUND_CHAT);
 		chatMsg[0].append(L"[System]: ");
 		break;
 	case 9: //error message
