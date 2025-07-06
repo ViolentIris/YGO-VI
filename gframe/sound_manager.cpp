@@ -345,7 +345,7 @@ void SoundManager::PlayBGM(int scene) {
 		int bgm = (count > 1) ? std::uniform_int_distribution<>(0, count - 1)(rnd) : 0;
 		auto name = BGMList[scene][bgm].c_str();
 		wchar_t BGMName[1024];
-		myswprintf(BGMName, L"./sound/%ls/%ls", mainGame->gameConf.soundtheme, name);
+		myswprintf(BGMName, L"./sound/BGM/%ls", name);
 		PlayMusic(BGMName, false);
 	}
 #endif
