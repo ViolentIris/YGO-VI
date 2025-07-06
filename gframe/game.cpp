@@ -1,6 +1,6 @@
-#include <irrlicht.h>
 #include "config.h"
 #include "game.h"
+#include "myfilesystem.h"
 #include "image_manager.h"
 #include "data_manager.h"
 #include "deck_manager.h"
@@ -11,6 +11,7 @@
 #include "netserver.h"
 #include "single_mode.h"
 #include <sstream>
+#include <thread>
 #include <regex>
 
 unsigned short PRO_VERSION = 0x1361;
@@ -89,6 +90,8 @@ bool Game::Initialize() {
 				skinSystem->applySkin(skins[index].c_str());
 		}
 	}
+	xScale = 1;
+	yScale = 1;
 	linePatternD3D = 0;
 	linePatternGL = 0x0f0f;
 	waitFrame = 0;
@@ -1459,6 +1462,7 @@ void Game::LoadConfig() {
 				gameConf.auto_save_replay = atoi(valbuf);
 		} else if(!strcmp(strbuf, "ask_mset")) {
 			gameConf.ask_mset = atoi(valbuf);
+#ifdef YGOPRO_USE_AUDIO
 		} else if(!strcmp(strbuf, "enable_sound")) {
 			gameConf.enable_sound = atoi(valbuf) > 0;
 		} else if(!strcmp(strbuf, "sound_volume")) {
@@ -1469,6 +1473,7 @@ void Game::LoadConfig() {
 			gameConf.music_volume = atof(valbuf) / 100;
 		} else if(!strcmp(strbuf, "music_mode")) {
 			gameConf.music_mode = atoi(valbuf);
+#endif
 		} else if(!strcmp(strbuf, "enable_pendulum_scale")) {
 			gameConf.chkEnablePScale = atoi(valbuf);
 		} else if(!strcmp(strbuf, "window_maximized")) {

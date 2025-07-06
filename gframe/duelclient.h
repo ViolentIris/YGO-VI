@@ -1,6 +1,7 @@
 #ifndef DUELCLIENT_H
 #define DUELCLIENT_H
 
+#include <random>
 #include "config.h"
 #include <vector>
 #include <set>
@@ -21,7 +22,7 @@ class DuelClient {
 private:
 	static unsigned int connect_state;
 	static unsigned char response_buf[SIZE_RETURN_VALUE];
-	static unsigned int response_len;
+	static size_t response_len;
 	static unsigned int watching;
 	static bool is_host;
 	static event_base* client_base;
@@ -33,9 +34,14 @@ private:
 	static int select_unselect_hint;
 	static int last_select_hint;
 	static unsigned char last_successful_msg[0x2000];
-	static unsigned int last_successful_msg_length;
+	static size_t last_successful_msg_length;
 	static wchar_t event_string[256];
-	static mt19937 rnd;
+	static std::mt19937 rnd;
+	static std::uniform_real_distribution<float> real_dist;
+	static bool is_refreshing;
+	static int match_kill;
+	static event* resp_event;
+	static std::set<std::pair<unsigned int, unsigned short>> remotes;
 public:
 	static unsigned int temp_ip;
 	static unsigned short temp_port;
@@ -50,46 +56,46 @@ public:
 	static void ClientEvent(bufferevent *bev, short events, void *ctx);
 	static int ClientThread();
 	static void HandleSTOCPacketLan(unsigned char* data, int len);
-	static int ClientAnalyze(unsigned char* msg, unsigned int len);
+	static bool ClientAnalyze(unsigned char* msg, int len);
 	static void SwapField();
-	static void SetResponseI(int respI);
-	static void SetResponseB(void* respB, unsigned int len);
+	static void SetResponseI(int32_t respI);
+	static void SetResponseB(void* respB, size_t len);
 	static void SendResponse();
 	static void SendPacketToServer(unsigned char proto) {
 		auto p = duel_client_write;
 		BufferIO::WriteInt16(p, 1);
 		BufferIO::WriteInt8(p, proto);
+#ifdef YGOPRO_MESSAGE_DEBUG
+		printf("CTOS: %d\n", proto);
+#endif
 		bufferevent_write(client_bev, duel_client_write, 3);
 	}
 	template<typename ST>
-	static void SendPacketToServer(unsigned char proto, ST& st) {
+	static void SendPacketToServer(unsigned char proto, const ST& st) {
 		auto p = duel_client_write;
 		if ((int)sizeof(ST) > MAX_DATA_SIZE)
 			return;
 		BufferIO::WriteInt16(p, (short)(1 + sizeof(ST)));
 		BufferIO::WriteInt8(p, proto);
 		std::memcpy(p, &st, sizeof(ST));
+#ifdef YGOPRO_MESSAGE_DEBUG
+		printf("CTOS: %d Length: %ld\n", proto, sizeof(ST));
+#endif
 		bufferevent_write(client_bev, duel_client_write, sizeof(ST) + 3);
 	}
 	static void SendBufferToServer(unsigned char proto, void* buffer, size_t len) {
 		auto p = duel_client_write;
-		int blen = len;
-		if (blen < 0)
-			return;
-		if (blen > MAX_DATA_SIZE)
-			blen = MAX_DATA_SIZE;
-		BufferIO::WriteInt16(p, (short)(1 + blen));
+		if (len > MAX_DATA_SIZE)
+			len = MAX_DATA_SIZE;
+		BufferIO::WriteInt16(p, (short)(1 + len));
 		BufferIO::WriteInt8(p, proto);
-		std::memcpy(p, buffer, blen);
-		bufferevent_write(client_bev, duel_client_write, blen + 3);
+		std::memcpy(p, buffer, len);
+#ifdef YGOPRO_MESSAGE_DEBUG
+		printf("CTOS: %d Length: %ld\n", proto, len);
+#endif
+		bufferevent_write(client_bev, duel_client_write, len + 3);
 	}
 	
-protected:
-	static bool is_refreshing;
-	static int match_kill;
-	static event* resp_event;
-	static std::set<std::pair<unsigned int, unsigned short>> remotes;
-public:
 	static std::vector<HostPacket> hosts;
 	static std::vector<std::wstring> hosts_srvpro;
 	static bool is_srvpro;

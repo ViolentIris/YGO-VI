@@ -9,6 +9,8 @@
 #include <event2/buffer.h>
 #include <event2/thread.h>
 #include <type_traits>
+#include <cstdint>
+#include <cstring>
 
 #define check_trivially_copyable(T) static_assert(std::is_trivially_copyable<T>::value == true && std::is_standard_layout<T>::value == true, "not trivially copyable")
 
@@ -54,6 +56,13 @@ struct HostRequest {
 check_trivially_copyable(HostRequest);
 static_assert(sizeof(HostRequest) == 2, "size mismatch: HostRequest");
 
+struct CTOS_DeckData {
+	int32_t mainc{};
+	int32_t sidec{};
+	uint32_t list[MAINC_MAX + SIDEC_MAX]{};
+};
+check_trivially_copyable(CTOS_DeckData);
+
 struct CTOS_HandResult {
 	unsigned char res;
 };
@@ -95,6 +104,14 @@ struct CTOS_Kick {
 };
 check_trivially_copyable(CTOS_Kick);
 static_assert(sizeof(CTOS_Kick) == 1, "size mismatch: CTOS_Kick");
+
+/*
+* CTOS_ExternalAddress
+* uint32_t real_ip; (IPv4 address, BE, alway 0 in normal client)
+* uint16_t hostname[256]; (UTF-16 string)
+*/
+
+constexpr int LEN_HOSTNAME = 256;
 
 // STOC
 struct STOC_ErrorMsg {
@@ -252,7 +269,7 @@ public:
 #define NETPLAYER_TYPE_OBSERVER		7
 
 #define CTOS_RESPONSE		0x1		// byte array
-#define CTOS_UPDATE_DECK	0x2		// mainc, sidec, int32_t[mainc + sidec]
+#define CTOS_UPDATE_DECK	0x2		// CTOS_DeckData
 #define CTOS_HAND_RESULT	0x3		// CTOS_HandResult
 #define CTOS_TP_RESULT		0x4		// CTOS_TPResult
 #define CTOS_PLAYER_INFO	0x10	// CTOS_PlayerInfo
@@ -262,6 +279,7 @@ public:
 #define CTOS_SURRENDER		0x14	// no data
 #define CTOS_TIME_CONFIRM	0x15	// no data
 #define CTOS_CHAT			0x16	// uint16_t array
+#define CTOS_EXTERNAL_ADDRESS	0x17	// CTOS_ExternalAddress
 #define CTOS_HS_TODUELIST	0x20	// no data
 #define CTOS_HS_TOOBSERVER	0x21	// no data
 #define CTOS_HS_READY		0x22	// no data
@@ -285,7 +303,7 @@ public:
 #define STOC_LEAVE_GAME		0x14	// reserved
 #define STOC_DUEL_START		0x15	// no data
 #define STOC_DUEL_END		0x16	// no data
-#define STOC_REPLAY			0x17	// ReplayHeader + byte array
+#define STOC_REPLAY			0x17	// ExtendedReplayHeader + byte array
 #define STOC_TIME_LIMIT		0x18	// STOC_TimeLimit
 #define STOC_CHAT			0x19	// uint16_t + uint16_t array
 #define STOC_HS_PLAYER_ENTER	0x20	// STOC_HS_PlayerEnter
@@ -294,6 +312,19 @@ public:
 #define STOC_TEAMMATE_SURRENDER	0x23	// no data
 #define STOC_FIELD_FINISH		0x30
 #define STOC_SRVPRO_ROOMLIST	0x31
+
+// STOC_GAME_MSG header
+#define MSG_WAITING				3
+#define MSG_START				4
+#define MSG_UPDATE_DATA			6	// flag=0: clear
+#define MSG_UPDATE_CARD			7	// flag=QUERY_CODE, code=0: clear
+#define MSG_REQUEST_DECK		8
+#define MSG_REFRESH_DECK		34
+#define MSG_CARD_SELECTED		80
+#define MSG_UNEQUIP				95
+#define MSG_BE_CHAIN_TARGET		121
+#define MSG_CREATE_RELATION		122
+#define MSG_RELEASE_RELATION	123
 
 #define PLAYERCHANGE_OBSERVE	0x8
 #define PLAYERCHANGE_READY		0x9
@@ -305,15 +336,15 @@ public:
 #define ERRMSG_SIDEERROR	0x3
 #define ERRMSG_VERERROR		0x4
 
-#define DECKERROR_LFLIST		0x1
-#define DECKERROR_OCGONLY		0x2
-#define DECKERROR_TCGONLY		0x3
-#define DECKERROR_UNKNOWNCARD	0x4
-#define DECKERROR_CARDCOUNT		0x5
-#define DECKERROR_MAINCOUNT		0x6
-#define DECKERROR_EXTRACOUNT	0x7
-#define DECKERROR_SIDECOUNT		0x8
-#define DECKERROR_NOTAVAIL		0x9
+#define DECKERROR_LFLIST		0x1U
+#define DECKERROR_OCGONLY		0x2U
+#define DECKERROR_TCGONLY		0x3U
+#define DECKERROR_UNKNOWNCARD	0x4U
+#define DECKERROR_CARDCOUNT		0x5U
+#define DECKERROR_MAINCOUNT		0x6U
+#define DECKERROR_EXTRACOUNT	0x7U
+#define DECKERROR_SIDECOUNT		0x8U
+#define DECKERROR_NOTAVAIL		0x9U
 
 #define MODE_SINGLE		0x0
 #define MODE_MATCH		0x1

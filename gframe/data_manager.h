@@ -10,6 +10,7 @@
 namespace ygo {
 	constexpr int MAX_STRING_ID = 0x7ff;
 	constexpr unsigned int MIN_CARD_ID = (unsigned int)(MAX_STRING_ID + 1) >> 4;
+	constexpr unsigned int MAX_CARD_ID = 0x0fffffffU;
 
 class DataManager {
 public:
@@ -64,6 +65,10 @@ public:
 	static byte* ScriptReader(const char* script_name, int* slen);
 	static IFileSystem* FileSystem;
 
+	static bool deck_sort_lv(code_pointer l1, code_pointer l2);
+	static bool deck_sort_atk(code_pointer l1, code_pointer l2);
+	static bool deck_sort_def(code_pointer l1, code_pointer l2);
+	static bool deck_sort_name(code_pointer l1, code_pointer l2);
 	std::vector<int> _expansionDatas;
 	std::unordered_map<unsigned int, CardDataC> _datas;
 	std::unordered_map<unsigned int, CardString> _strings;

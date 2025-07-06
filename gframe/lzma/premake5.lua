@@ -1,3 +1,4 @@
 project "clzma"
     kind "StaticLib"
-    files { "**.c", "**.h" }
+    cdialect "C11"
+    files { "*.c", "*.h" }
