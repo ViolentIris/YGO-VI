@@ -1463,16 +1463,26 @@ void Game::LoadConfig() {
 		} else if(!strcmp(strbuf, "ask_mset")) {
 			gameConf.ask_mset = atoi(valbuf);
 #ifdef YGOPRO_USE_AUDIO
-		} else if(!strcmp(strbuf, "enable_sound")) {
-			gameConf.enable_sound = atoi(valbuf) > 0;
-		} else if(!strcmp(strbuf, "sound_volume")) {
-			gameConf.sound_volume = atof(valbuf) / 100;
-		} else if(!strcmp(strbuf, "enable_music")) {
-			gameConf.enable_music = atoi(valbuf) > 0;
-		} else if(!strcmp(strbuf, "music_volume")) {
-			gameConf.music_volume = atof(valbuf) / 100;
-		} else if(!strcmp(strbuf, "music_mode")) {
-			gameConf.music_mode = atoi(valbuf);
+			} else if(!strcmp(strbuf, "enable_sound")) {
+				gameConf.enable_sound = atoi(valbuf) > 0;
+			} else if(!strcmp(strbuf, "sound_volume")) {
+			int vol = strtol(valbuf, nullptr, 10);
+			if (vol < 0)
+				vol = 0;
+			else if (vol > 100)
+				vol = 100;
+			gameConf.sound_volume = (double)vol / 100;
+			} else if(!strcmp(strbuf, "enable_music")) {
+				gameConf.enable_music = atoi(valbuf) > 0;
+			} else if(!strcmp(strbuf, "music_volume")) {
+			int vol = strtol(valbuf, nullptr, 10);
+			if (vol < 0)
+				vol = 0;
+			else if (vol > 100)
+				vol = 100;
+			gameConf.music_volume = (double)vol / 100;
+			} else if(!strcmp(strbuf, "music_mode")) {
+				gameConf.music_mode = atoi(valbuf);
 #endif
 		} else if(!strcmp(strbuf, "enable_pendulum_scale")) {
 			gameConf.chkEnablePScale = atoi(valbuf);
